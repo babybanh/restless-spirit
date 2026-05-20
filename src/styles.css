@@ -143,9 +143,9 @@ body.is-loading #ui-root {
   position: absolute;
   z-index: 45;
   border: 0;
-  color: #17122c;
-  background: linear-gradient(#ffe19a, #f2ad3d);
-  box-shadow: 0 6px 0 #8e5c1c, 0 12px 20px rgba(5, 10, 33, 0.2);
+  color: #5530b3;
+  background: linear-gradient(#ffffff, #dcd9ee);
+  box-shadow: 0 6px 0 #9693b5, 0 12px 20px rgba(5, 10, 33, 0.2);
   cursor: pointer;
   font-weight: 600;
   pointer-events: auto;
@@ -154,7 +154,7 @@ body.is-loading #ui-root {
 .game-button:active,
 .screen-button:active {
   transform: translateY(3px);
-  box-shadow: 0 3px 0 #8e5c1c, 0 8px 14px rgba(5, 10, 33, 0.18);
+  box-shadow: 0 3px 0 #9693b5, 0 8px 14px rgba(5, 10, 33, 0.18);
 }
 
 .top-bar {
@@ -408,10 +408,10 @@ body.is-loading #ui-root {
   position: absolute;
   z-index: 126;
   border: 0;
-  color: #17122c;
-  background: linear-gradient(#ffe19a, #f2ad3d);
+  color: #5530b3;
+  background: linear-gradient(#ffffff, #dcd9ee);
   box-shadow: none;
-  filter: drop-shadow(0 6px 0 #8e5c1c);
+  filter: drop-shadow(0 6px 0 #9693b5);
   cursor: pointer;
   font-weight: 600;
   pointer-events: auto;
