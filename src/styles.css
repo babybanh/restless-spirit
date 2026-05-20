@@ -644,6 +644,21 @@ body.is-loading #ui-root {
 }
 
 @media (max-width: 560px) {
+  body::before {
+    background-image: none;
+    background:
+      radial-gradient(circle at 50% 18%, rgba(72, 99, 156, 0.62), transparent 36%),
+      linear-gradient(180deg, #111957 0%, #5f587f 100%);
+    filter: none;
+    transform: none;
+  }
+
+  #loading-screen::before,
+  .start-blur-layer {
+    filter: blur(3px) saturate(1.02);
+    transform: scale(1.006);
+  }
+
   .soft-modal-overlay {
     padding: 12px;
   }

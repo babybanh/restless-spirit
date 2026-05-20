@@ -10,6 +10,7 @@ export function createGameUi(config, root, state, input) {
   root.append(layer);
 
   const elements = {};
+  let currentBackdropPath = null;
   const audio = createAudioController(config);
   state.soundMuted = !audio.musicEnabled;
   const uiApi = {
@@ -88,6 +89,7 @@ export function createGameUi(config, root, state, input) {
     elements.startScreen = overlay;
     elements.startLeadMirror = leadMirror;
     elements.startBananaMirror = bananaMirror;
+    elements.startSpotlightCache = null;
     updateStartSpotlight(elements, state, config);
   }
 
@@ -170,7 +172,7 @@ export function createGameUi(config, root, state, input) {
   }
 
   function update(debugData) {
-    updatePageBackdrop(config);
+    currentBackdropPath = updatePageBackdrop(config, currentBackdropPath);
     elements.score.textContent = `${config.copy.scoreLabel}: ${state.score}`;
     elements.bananaCount.textContent = `${config.copy.roleLabels.collectiblePlural}: ${state.bananaCount}`;
     elements.hearts.textContent = "♥".repeat(state.hearts);
@@ -748,6 +750,22 @@ function updateJoystickView(elements, joystick, config, state) {
 function updateStartSpotlight(elements, state, config) {
   if (!elements.startScreen) return;
   const banana = state.bananas[0] || state.banana;
+  const nextCache = [
+    state.bun.x,
+    state.bun.y,
+    banana.x || config.startScreen.bananaX,
+    banana.y || config.startScreen.bananaY,
+    config.bun.width * config.art.characters.bun.scale,
+    config.bun.height * config.art.characters.bun.scale,
+    config.banana.width * config.art.characters.banana.scale,
+    config.banana.height * config.art.characters.banana.scale,
+    config.bottomControls.joystickHintX,
+    config.bottomControls.joystickHintY,
+    config.bottomControls.joystickHintRadius
+  ].join("|");
+  if (elements.startSpotlightCache === nextCache) return;
+  elements.startSpotlightCache = nextCache;
+
   positionLiftedObject(
     elements.startLeadMirror,
     state.bun.x,
@@ -833,14 +851,17 @@ function createAudioController(config) {
   let interactionUnlocked = false;
   let audioPrimed = false;
   let sfxPrimed = false;
+  let sfxPrimePending = false;
   let loopTimer = null;
   let startTimer = null;
+  const queuedSfx = [];
+  const sfxPlayers = new Map();
   const audio = new Audio(config.audio.musicPath);
-  const sfxPools = createSfxPools(config);
   audio.volume = config.audio.musicVolume;
   audio.preload = "auto";
   audio.playsInline = true;
   audio.load();
+  preloadSfxFiles();
 
   audio.addEventListener("ended", () => {
     if (!musicEnabled || !started) return;
@@ -859,8 +880,6 @@ function createAudioController(config) {
       started = false;
       audioPrimed = false;
     }
-    sfxPrimed = false;
-    resetSfxPools();
   });
 
   function play() {
@@ -873,20 +892,22 @@ function createAudioController(config) {
 
   function prepareFromGesture() {
     interactionUnlocked = true;
-    primeSfxFromGesture();
+    primeSfxPath();
     if (audioPrimed || started || !musicEnabled || !config.audio.startOnFirstMovement) return;
     startMutedMusic();
   }
 
   function startFromMovement() {
     interactionUnlocked = true;
-    primeSfxFromGesture();
+    primeSfxPath();
     if (!musicEnabled || started || !config.audio.startOnFirstMovement) return;
     started = true;
     window.clearTimeout(startTimer);
     window.clearTimeout(loopTimer);
-    audio.currentTime = 0;
-    startMutedMusic();
+    if (!audioPrimed) {
+      audio.currentTime = 0;
+      startMutedMusic();
+    }
     startTimer = window.setTimeout(() => {
       revealMusicAfterDelay();
     }, config.audio.startDelayMs || 0);
@@ -936,10 +957,6 @@ function createAudioController(config) {
   function toggleSfx() {
     sfxEnabled = !sfxEnabled;
     localStorage.setItem(config.audio.sfxStorageKey, String(sfxEnabled));
-    if (sfxEnabled && interactionUnlocked) {
-      sfxPrimed = false;
-      primeSfxFromGesture();
-    }
     return sfxEnabled;
   }
 
@@ -949,65 +966,110 @@ function createAudioController(config) {
 
   function playSfx(name) {
     if (!sfxEnabled || !interactionUnlocked) return;
+    if (!isSfxReady()) {
+      queuedSfx.push(name);
+      primeSfxPath();
+      return;
+    }
     playFileSfx(name);
   }
 
   function previewSfx(name) {
     interactionUnlocked = true;
-    primeSfxFromGesture();
+    primeSfxPath();
     playFileSfx(name);
   }
 
-  function primeSfxFromGesture() {
-    if (sfxPrimed || !sfxEnabled) return;
-    sfxPrimed = true;
-    for (const pool of sfxPools.values()) {
-      const clip = pool[0];
-      clip.muted = true;
-      clip.volume = 0;
-      clip.currentTime = 0;
-      const prime = clip.play();
-      const restore = () => {
-        clip.pause();
-        clip.currentTime = 0;
-        clip.muted = false;
-        clip.volume = config.audio.sfxVolume;
-      };
-      if (prime?.then) {
-        prime.then(restore).catch(restore);
-      } else {
-        restore();
-      }
+  function primeSfxPath() {
+    if (!sfxEnabled) return;
+    if (sfxPrimed) {
+      flushQueuedSfx();
+      return;
     }
+    if (sfxPrimePending) return;
+    const players = getPrimeableSfxPlayers();
+    if (!players.length) return;
+    sfxPrimePending = true;
+
+    Promise.allSettled(players.map(primeSfxPlayer)).then(() => {
+      sfxPrimed = true;
+      sfxPrimePending = false;
+      flushQueuedSfx();
+    });
+  }
+
+  function isSfxReady() {
+    return sfxPrimed;
+  }
+
+  function flushQueuedSfx() {
+    if (!isSfxReady() || !sfxEnabled || !interactionUnlocked) return;
+    const nextSounds = queuedSfx.splice(0, queuedSfx.length);
+    for (const name of nextSounds) {
+      playFileSfx(name);
+    }
+  }
+
+  function preloadSfxFiles() {
+    for (const path of getAllSfxPaths(config)) {
+      getSfxPlayer(path);
+    }
+  }
+
+  function getPrimeableSfxPlayers() {
+    const paths = new Set([
+      resolveSfxPath(config, "bananaPickup"),
+      resolveSfxPath(config, "bombExplosion"),
+      resolveSfxPath(config, "bunnyHit")
+    ].filter(Boolean));
+    return [...paths].map((path) => getSfxPlayer(path)).filter(Boolean);
+  }
+
+  function primeSfxPlayer(player) {
+    player.muted = true;
+    player.volume = 0;
+    const prime = player.play();
+    return Promise.resolve(prime).then(() => {
+      player.pause();
+      player.currentTime = 0;
+    }).catch(() => undefined).finally(() => {
+      player.muted = false;
+      player.volume = config.audio.sfxVolume;
+    });
   }
 
   function playFileSfx(name) {
     const path = resolveSfxPath(config, name);
     if (!path) return;
-    const pool = sfxPools.get(path);
-    if (!pool) return;
-    const clip = pool.find((audioElement) => audioElement.paused || audioElement.ended) || pool[0];
-    clip.pause();
-    clip.currentTime = 0;
-    clip.muted = false;
-    clip.volume = config.audio.sfxVolume;
-    clip.play().catch(() => {});
+    const player = getSfxPlayer(path);
+    if (!player) return;
+    player.pause();
+    player.currentTime = 0;
+    player.muted = false;
+    player.volume = config.audio.sfxVolume;
+    const sound = player.play();
+    if (sound?.catch) {
+      sound.catch(() => {
+        sfxPrimed = false;
+        queuedSfx.push(name);
+      });
+    }
   }
 
-  function resetSfxPools() {
-    for (const pool of sfxPools.values()) {
-      for (const clip of pool) {
-        clip.pause();
-        clip.currentTime = 0;
-        clip.muted = false;
-        clip.volume = config.audio.sfxVolume;
-      }
-    }
+  function getSfxPlayer(path) {
+    if (!path) return null;
+    if (sfxPlayers.has(path)) return sfxPlayers.get(path);
+    const player = new Audio(path);
+    player.preload = "auto";
+    player.playsInline = true;
+    player.volume = config.audio.sfxVolume;
+    player.load();
+    sfxPlayers.set(path, player);
+    return player;
   }
 
   function resetToConfig() {
     audio.volume = config.audio.musicVolume;
-    resetSfxPools();
   }
 
   return {
@@ -1031,7 +1093,7 @@ function createAudioController(config) {
   };
 }
 
-function createSfxPools(config) {
+function getAllSfxPaths(config) {
   const paths = new Set();
   for (const sfx of Object.values(config.sfx || {})) {
     if (sfx.path) paths.add(sfx.path);
@@ -1040,20 +1102,7 @@ function createSfxPools(config) {
     }
   }
 
-  const pools = new Map();
-  for (const path of paths) {
-    pools.set(path, Array.from({ length: 3 }, () => createSfxClip(path, config.audio.sfxVolume)));
-  }
-  return pools;
-}
-
-function createSfxClip(path, volume) {
-  const clip = new Audio(path);
-  clip.preload = "auto";
-  clip.playsInline = true;
-  clip.volume = volume;
-  clip.load();
-  return clip;
+  return paths;
 }
 
 function resolveSfxPath(config, name) {
@@ -1080,14 +1129,16 @@ function updateTuningValues(elements, config) {
   }
 }
 
-function updatePageBackdrop(config) {
+function updatePageBackdrop(config, currentPath) {
   const selected = config.art.fullFrameBackgrounds.find((background) => (
     String(background.id) === String(config.art.selectedFullFrameBackground)
   ));
   const path = config.art.backgroundMode === "fullFrame" && selected ? selected.path : "";
+  if (path === currentPath) return currentPath;
   document.body.style.setProperty("--page-backdrop-image", path ? `url("${path}")` : "none");
   document.body.style.setProperty("--game-frame-image", path ? `url("${path}")` : "none");
   document.body.classList.toggle("has-game-backdrop", Boolean(path));
+  return path;
 }
 
 function applySavedTuning(config) {

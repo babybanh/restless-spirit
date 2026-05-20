@@ -220,6 +220,15 @@ export class RestlessSpiritScene extends Phaser.Scene {
       }).setOrigin(0.5)
     ]).setDepth(config.secondGorilla.zIndex);
     this.secondGorilla.setVisible(false);
+
+    this.comboPopup = this.add.text(0, 0, "Combo!", {
+      fontFamily: "Trebuchet MS, Arial",
+      fontSize: "22px",
+      fontStyle: "bold",
+      color: "#7d55e3",
+      stroke: "#fffafd",
+      strokeThickness: 5
+    }).setOrigin(0.5).setDepth(config.combo.zIndex).setVisible(false).setAlpha(0);
   }
 
   connectUi() {
@@ -246,6 +255,7 @@ export class RestlessSpiritScene extends Phaser.Scene {
     this.spawnAllBananas();
     this.gorilla.setVisible(false);
     this.secondGorilla.setVisible(false);
+    this.hideComboPopup();
     this.bun.setVisible(true);
     this.player.setVisible(false);
     this.player.setScale(1);
@@ -266,6 +276,7 @@ export class RestlessSpiritScene extends Phaser.Scene {
     this.spawnAllBananas();
     this.gorilla.setVisible(false);
     this.secondGorilla.setVisible(false);
+    this.hideComboPopup();
     this.bun.setVisible(true);
     this.player.setVisible(false);
     this.player.setScale(1);
@@ -1409,26 +1420,28 @@ export class RestlessSpiritScene extends Phaser.Scene {
     return this.state.lastComboBonus;
   }
 
-  showComboPopup(text) {
+  showComboPopup() {
     const config = this.configData;
     const lead = this.getLeadCharacter();
-    const popup = this.add.text(lead.x, lead.y - 42, text, {
-      fontFamily: "Trebuchet MS, Arial",
-      fontSize: "22px",
-      fontStyle: "bold",
-      color: "#cf4d82",
-      stroke: "#fff1dc",
-      strokeThickness: 5
-    }).setOrigin(0.5).setDepth(config.combo.zIndex);
+    const popup = this.comboPopup;
+    if (!popup) return;
 
+    this.tweens.killTweensOf(popup);
+    popup.setPosition(lead.x, lead.y - 42).setAlpha(1).setVisible(true);
     this.tweens.add({
       targets: popup,
       y: popup.y - config.combo.popupRise,
       alpha: 0,
       duration: config.combo.popupDurationMs,
       ease: "Sine.easeOut",
-      onComplete: () => popup.destroy()
+      onComplete: () => popup.setVisible(false)
     });
+  }
+
+  hideComboPopup() {
+    if (!this.comboPopup) return;
+    this.tweens.killTweensOf(this.comboPopup);
+    this.comboPopup.setVisible(false).setAlpha(0);
   }
 
   playSfx(name) {
