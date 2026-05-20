@@ -434,10 +434,10 @@ function createJoystick(elements, layer, config) {
   knob.style.position = "absolute";
   base.style.borderRadius = "50%";
   knob.style.borderRadius = "50%";
-  base.style.background = "rgba(255, 238, 211, 0.58)";
-  base.style.border = "5px solid rgba(53, 36, 31, 0.4)";
-  knob.style.background = "rgba(255, 119, 87, 0.88)";
-  knob.style.border = "4px solid rgba(53, 36, 31, 0.55)";
+  base.style.background = "rgba(44, 34, 96, 0.5)";
+  base.style.border = "5px solid rgba(244, 239, 255, 0.42)";
+  knob.style.background = "rgba(125, 85, 227, 0.9)";
+  knob.style.border = "4px solid rgba(244, 239, 255, 0.52)";
   base.style.opacity = config.joystick.opacity;
   knob.style.opacity = config.joystick.opacity;
   base.style.zIndex = config.joystick.zIndex;
@@ -832,10 +832,11 @@ function createAudioController(config) {
   let started = false;
   let interactionUnlocked = false;
   let audioPrimed = false;
+  let sfxPrimed = false;
   let loopTimer = null;
   let startTimer = null;
-  let audioContext = null;
   const audio = new Audio(config.audio.musicPath);
+  const sfxPools = createSfxPools(config);
   audio.volume = config.audio.musicVolume;
   audio.preload = "auto";
   audio.playsInline = true;
@@ -858,6 +859,8 @@ function createAudioController(config) {
       started = false;
       audioPrimed = false;
     }
+    sfxPrimed = false;
+    resetSfxPools();
   });
 
   function play() {
@@ -870,7 +873,7 @@ function createAudioController(config) {
 
   function prepareFromGesture() {
     interactionUnlocked = true;
-    unlockAudioContext();
+    primeSfxFromGesture();
     if (audioPrimed || started || !musicEnabled || !config.audio.startOnFirstMovement) return;
     audioPrimed = true;
 
@@ -890,7 +893,7 @@ function createAudioController(config) {
 
   function startFromMovement() {
     interactionUnlocked = true;
-    unlockAudioContext();
+    primeSfxFromGesture();
     if (!musicEnabled || started || !config.audio.startOnFirstMovement) return;
     started = true;
     window.clearTimeout(startTimer);
@@ -924,6 +927,10 @@ function createAudioController(config) {
   function toggleSfx() {
     sfxEnabled = !sfxEnabled;
     localStorage.setItem(config.audio.sfxStorageKey, String(sfxEnabled));
+    if (sfxEnabled && interactionUnlocked) {
+      sfxPrimed = false;
+      primeSfxFromGesture();
+    }
     return sfxEnabled;
   }
 
@@ -933,77 +940,65 @@ function createAudioController(config) {
 
   function playSfx(name) {
     if (!sfxEnabled || !interactionUnlocked) return;
-    playGeneratedSfx(name);
+    playFileSfx(name);
   }
 
   function previewSfx(name) {
     interactionUnlocked = true;
-    playGeneratedSfx(name);
+    primeSfxFromGesture();
+    playFileSfx(name);
   }
 
-  function playGeneratedSfx(name) {
-    const sfx = config.sfx[name];
-    if (!sfx) return;
-    const presetName = name === "bananaPickup" ? config.audio.bananaSfxPreset : config.audio.bombSfxPreset;
-    const preset = sfx.presets?.[presetName];
-    if (!preset) return;
-    const context = unlockAudioContext();
-    if (!context) return;
-
-    const now = context.currentTime;
-    for (const note of preset.notes || []) {
-      const start = now + (note.delayMs || 0) / 1000;
-      const duration = note.durationMs / 1000;
-      const oscillator = context.createOscillator();
-      const gain = context.createGain();
-      oscillator.type = note.type;
-      oscillator.frequency.setValueAtTime(note.frequency, start);
-      if (note.endFrequency) {
-        oscillator.frequency.exponentialRampToValueAtTime(note.endFrequency, start + duration);
+  function primeSfxFromGesture() {
+    if (sfxPrimed || !sfxEnabled) return;
+    sfxPrimed = true;
+    for (const pool of sfxPools.values()) {
+      const clip = pool[0];
+      clip.muted = true;
+      clip.volume = 0;
+      clip.currentTime = 0;
+      const prime = clip.play();
+      const restore = () => {
+        clip.pause();
+        clip.currentTime = 0;
+        clip.muted = false;
+        clip.volume = config.audio.sfxVolume;
+      };
+      if (prime?.then) {
+        prime.then(restore).catch(restore);
+      } else {
+        restore();
       }
-      gain.gain.setValueAtTime(0.0001, start);
-      gain.gain.exponentialRampToValueAtTime(Math.max(0.0001, config.audio.sfxVolume * note.volume), start + 0.012);
-      gain.gain.exponentialRampToValueAtTime(0.0001, start + duration);
-      oscillator.connect(gain);
-      gain.connect(context.destination);
-      oscillator.start(start);
-      oscillator.stop(start + duration + 0.03);
-    }
-
-    if (preset.noise) {
-      playNoise(context, now, preset.noise, config.audio.sfxVolume);
     }
   }
 
-  function playNoise(context, start, noise, masterVolume) {
-    const duration = noise.durationMs / 1000;
-    const sampleCount = Math.max(1, Math.floor(context.sampleRate * duration));
-    const buffer = context.createBuffer(1, sampleCount, context.sampleRate);
-    const data = buffer.getChannelData(0);
-    for (let index = 0; index < sampleCount; index += 1) {
-      data[index] = (Math.random() * 2 - 1) * (1 - index / sampleCount);
-    }
-    const source = context.createBufferSource();
-    const gain = context.createGain();
-    gain.gain.setValueAtTime(Math.max(0.0001, masterVolume * noise.volume), start);
-    gain.gain.exponentialRampToValueAtTime(0.0001, start + duration);
-    source.buffer = buffer;
-    source.connect(gain);
-    gain.connect(context.destination);
-    source.start(start);
-    source.stop(start + duration);
+  function playFileSfx(name) {
+    const path = resolveSfxPath(config, name);
+    if (!path) return;
+    const pool = sfxPools.get(path);
+    if (!pool) return;
+    const clip = pool.find((audioElement) => audioElement.paused || audioElement.ended) || pool[0];
+    clip.pause();
+    clip.currentTime = 0;
+    clip.muted = false;
+    clip.volume = config.audio.sfxVolume;
+    clip.play().catch(() => {});
   }
 
-  function unlockAudioContext() {
-    const AudioContextClass = window.AudioContext || window.webkitAudioContext;
-    if (!AudioContextClass) return null;
-    if (!audioContext) audioContext = new AudioContextClass();
-    if (audioContext.state === "suspended") audioContext.resume();
-    return audioContext;
+  function resetSfxPools() {
+    for (const pool of sfxPools.values()) {
+      for (const clip of pool) {
+        clip.pause();
+        clip.currentTime = 0;
+        clip.muted = false;
+        clip.volume = config.audio.sfxVolume;
+      }
+    }
   }
 
   function resetToConfig() {
     audio.volume = config.audio.musicVolume;
+    resetSfxPools();
   }
 
   return {
@@ -1025,6 +1020,41 @@ function createAudioController(config) {
       return started;
     }
   };
+}
+
+function createSfxPools(config) {
+  const paths = new Set();
+  for (const sfx of Object.values(config.sfx || {})) {
+    if (sfx.path) paths.add(sfx.path);
+    for (const preset of Object.values(sfx.presets || {})) {
+      if (preset.path) paths.add(preset.path);
+    }
+  }
+
+  const pools = new Map();
+  for (const path of paths) {
+    pools.set(path, Array.from({ length: 3 }, () => createSfxClip(path, config.audio.sfxVolume)));
+  }
+  return pools;
+}
+
+function createSfxClip(path, volume) {
+  const clip = new Audio(path);
+  clip.preload = "auto";
+  clip.playsInline = true;
+  clip.volume = volume;
+  clip.load();
+  return clip;
+}
+
+function resolveSfxPath(config, name) {
+  const sfx = config.sfx?.[name];
+  if (!sfx) return "";
+  if (sfx.path) return sfx.path;
+
+  const presetName = name === "bananaPickup" ? config.audio.bananaSfxPreset : config.audio.bombSfxPreset;
+  const preset = sfx.presets?.[presetName] || Object.values(sfx.presets || {})[0];
+  return preset?.path || "";
 }
 
 function updateTuningValues(elements, config) {

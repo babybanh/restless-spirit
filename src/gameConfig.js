@@ -1,21 +1,21 @@
 export const gameConfig = {
   copy: {
     title: "Restless Spirit",
-    startPrompt: "Move Restless Spirit. Companion joins at 9 lights.",
+    startPrompt: "Move Ghost. Coin joins at 9 lights.",
     gameOverTitle: "Game Over",
     restartLabel: "Restart",
     scoreLabel: "Score",
     musicOnLabel: "Music: On",
     musicOffLabel: "Music: Off",
     creditsLabel: "Credits",
-    conceptAlt: "Restless Spirit concept art placeholder",
+    conceptAlt: "Haunted mansion game art for Restless Spirit",
     roleLabels: {
-      player: "Companion",
-      lead: "Restless Spirit",
+      player: "Coin",
+      lead: "Ghost",
       collectible: "Spirit Light",
       collectiblePlural: "Spirit Lights",
-      chaser: "Shadow",
-      secondChaser: "Night Watcher",
+      chaser: "Bat",
+      secondChaser: "Pumpkin",
       hazard: "Trap"
     }
   },
@@ -59,10 +59,10 @@ export const gameConfig = {
   },
 
   player: {
-    width: 58,
-    height: 58,
-    hitboxWidth: 42,
-    hitboxHeight: 42,
+    width: 42,
+    height: 42,
+    hitboxWidth: 30,
+    hitboxHeight: 30,
     speed: 310,
     rotation: 0,
     zIndex: 20,
@@ -73,10 +73,10 @@ export const gameConfig = {
   },
 
   bun: {
-    width: 60,
-    height: 60,
-    hitboxWidth: 44,
-    hitboxHeight: 44,
+    width: 64,
+    height: 72,
+    hitboxWidth: 42,
+    hitboxHeight: 48,
     speed: 335,
     rotation: 0,
     zIndex: 22,
@@ -141,10 +141,10 @@ export const gameConfig = {
   },
 
   gorilla: {
-    width: 76,
-    height: 76,
-    hitboxWidth: 56,
-    hitboxHeight: 56,
+    width: 96,
+    height: 56,
+    hitboxWidth: 54,
+    hitboxHeight: 38,
     speed: 80,
     bounceSpeed: 80,
     damage: 1,
@@ -193,10 +193,10 @@ export const gameConfig = {
 
   secondGorilla: {
     spawnAtBananas: 18,
-    width: 70,
-    height: 70,
-    hitboxWidth: 52,
-    hitboxHeight: 52,
+    width: 72,
+    height: 72,
+    hitboxWidth: 50,
+    hitboxHeight: 50,
     speed: 80,
     damage: 1,
     wanderTurnMs: 1200,
@@ -239,8 +239,7 @@ export const gameConfig = {
     maxHitboxScale: 2.4,
     selectedFullFrameBackground: "default",
     fullFrameBackgrounds: [
-      { id: "default", label: "Default stage", path: "/assets/images/restless-spirit/backgrounds/background-default.png" },
-      { id: "alt", label: "Alternate stage", path: "/assets/images/restless-spirit/backgrounds/background-alt.png" }
+      { id: "default", label: "Haunted mansion", path: "/assets/images/restless-spirit/backgrounds/background-default.png" }
     ],
     selectedPlayfieldBackground: "",
     playfieldLayerMode: "off",
@@ -248,15 +247,15 @@ export const gameConfig = {
     characters: {
       bunbun: {
         path: "/assets/images/restless-spirit/characters/follower.png",
-        scale: 1.75,
+        scale: 1.45,
         offsetX: 0,
         offsetY: 0
       },
       bun: {
         path: "/assets/images/restless-spirit/characters/lead.png",
-        scale: 1.85,
+        scale: 1.7,
         offsetX: 0,
-        offsetY: 0
+        offsetY: -2
       },
       banana: {
         path: "/assets/images/restless-spirit/characters/collectible.png",
@@ -272,13 +271,13 @@ export const gameConfig = {
       },
       gorilla: {
         path: "/assets/images/restless-spirit/characters/chaser-a.png",
-        scale: 1.75,
+        scale: 1.55,
         offsetX: 0,
         offsetY: 0
       },
       g2: {
         path: "/assets/images/restless-spirit/characters/chaser-b.png",
-        scale: 1.5,
+        scale: 1.55,
         offsetX: 0,
         offsetY: 0
       }
@@ -290,23 +289,15 @@ export const gameConfig = {
       presets: {
         softChime: {
           label: "Soft chime",
-          notes: [
-            { frequency: 740, durationMs: 70, type: "sine", volume: 0.34 },
-            { frequency: 980, delayMs: 60, durationMs: 90, type: "triangle", volume: 0.28 }
-          ]
+          path: "/assets/audio/sfx/restless-spirit-pickup-soft-chime.wav"
         },
         bubblePop: {
           label: "Bubble pop",
-          notes: [
-            { frequency: 420, endFrequency: 760, durationMs: 95, type: "sine", volume: 0.34 }
-          ]
+          path: "/assets/audio/sfx/restless-spirit-pickup-bubble-pop.wav"
         },
         tinyBell: {
           label: "Tiny bell",
-          notes: [
-            { frequency: 1180, durationMs: 120, type: "sine", volume: 0.24 },
-            { frequency: 1560, delayMs: 20, durationMs: 90, type: "sine", volume: 0.12 }
-          ]
+          path: "/assets/audio/sfx/restless-spirit-pickup-tiny-bell.wav"
         }
       }
     },
@@ -314,26 +305,20 @@ export const gameConfig = {
       presets: {
         softBoom: {
           label: "Soft boom",
-          notes: [
-            { frequency: 120, endFrequency: 58, durationMs: 240, type: "sine", volume: 0.55 }
-          ],
-          noise: { durationMs: 150, volume: 0.16 }
+          path: "/assets/audio/sfx/restless-spirit-hazard-soft-boom.wav"
         },
         cartoonPop: {
           label: "Cartoon pop",
-          notes: [
-            { frequency: 240, endFrequency: 120, durationMs: 130, type: "triangle", volume: 0.42 },
-            { frequency: 520, delayMs: 40, durationMs: 70, type: "sine", volume: 0.18 }
-          ]
+          path: "/assets/audio/sfx/restless-spirit-hazard-cartoon-pop.wav"
         },
         lowThump: {
           label: "Low thump",
-          notes: [
-            { frequency: 82, endFrequency: 44, durationMs: 300, type: "sine", volume: 0.5 }
-          ],
-          noise: { durationMs: 90, volume: 0.08 }
+          path: "/assets/audio/sfx/restless-spirit-hazard-low-thump.wav"
         }
       }
+    },
+    bunnyHit: {
+      path: "/assets/audio/sfx/restless-spirit-hit.wav"
     }
   },
 
@@ -483,10 +468,10 @@ export const gameConfig = {
   },
 
   concept: {
-    imagePath: "/assets/images/restless-spirit/concept/concept.webp",
-    title: "Original Game Idea",
-    subtitle: "Restless Spirit concept placeholder",
-    buttonLabel: "Tap title to view the concept",
+    imagePath: "/assets/images/restless-spirit/concept/concept.png",
+    title: "Game Art",
+    subtitle: "Hannah's haunted mansion stage art",
+    buttonLabel: "Tap title to view the game art",
     imageX: 360,
     imageY: 378,
     imageWidth: 340,
@@ -494,14 +479,14 @@ export const gameConfig = {
   },
 
   credits: {
-    studentName: "Student credit coming soon",
+    studentName: "Hannah",
     contestTitle: "PIK Composition Contest 2026",
     contestUrl: "https://youtube.com/playlist?list=PLhhleIn9mEjhNAztK55u86m13lu6xpqoM&si=9kGz8asDtaMO3Wy8",
-    linkLabel: "Theme credit coming soon",
-    musicUrl: "",
+    linkLabel: "Hannah - Restless Spirit",
+    musicUrl: "https://www.youtube.com/watch?v=Woz_xv3eIcM",
     designerName: "Le Binh Anh Nguyen",
     designerEmail: "binhanhpiano96@gmail.com",
-    line1: "Restless Spirit artwork and music credit coming soon",
+    line1: "Original music and characters by Hannah",
     line2: "Playable browser-game adaptation by Beita and Codex"
   },
 
@@ -536,7 +521,7 @@ export const gameConfig = {
     promptY: 610,
     promptWidth: 500,
     promptFontSize: 15,
-    promptText: "Move Restless Spirit. Companion joins at 9 lights.",
+    promptText: "Move Ghost. Coin joins at 9 lights.",
     tapText: "Tap the player to play",
     tapTextY: 470,
     computerButtonX: 130,

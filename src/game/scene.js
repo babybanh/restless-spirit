@@ -116,7 +116,7 @@ export class RestlessSpiritScene extends Phaser.Scene {
       config.game.designHeight / 2,
       config.game.designWidth,
       config.game.designHeight,
-      0xf7c88f
+      0x08112e
     ).setDepth(config.game.backgroundZ);
 
     this.consoleFrame = this.add.image(
@@ -137,7 +137,7 @@ export class RestlessSpiritScene extends Phaser.Scene {
       .setDepth(config.game.backgroundZ + 0.05);
 
     this.playAreaFallback = this.add.graphics().setDepth(config.game.playAreaZ);
-    this.playAreaFallback.fillStyle(0xffefd4, 1);
+    this.playAreaFallback.fillStyle(0xf4efff, 1);
     this.playAreaFallback.fillRoundedRect(playArea.x, playArea.y, playArea.width, playArea.height, playArea.borderRadius);
 
     this.playfieldBackground = this.add.image(
@@ -155,7 +155,7 @@ export class RestlessSpiritScene extends Phaser.Scene {
     this.playfieldBackground.setMask(this.playAreaMaskShape.createGeometryMask());
 
     this.playAreaBorder = this.add.graphics().setDepth(config.game.playAreaZ + 0.2);
-    this.playAreaBorder.lineStyle(4, 0xffd982, 0.88);
+    this.playAreaBorder.lineStyle(4, 0xc7b7ff, 0.88);
     this.playAreaBorder.strokeRoundedRect(playArea.x, playArea.y, playArea.width, playArea.height, playArea.borderRadius);
     this.currentPlayfieldBackground = "";
     this.currentFullFrameBackground = "";
@@ -170,28 +170,28 @@ export class RestlessSpiritScene extends Phaser.Scene {
     this.bombSprites = [];
 
     this.player = this.createArtContainer("character-bunbun", "bunbun", [
-      this.add.ellipse(0, 5, config.player.width, config.player.height, 0xffd982).setStrokeStyle(4, 0x8b4b2f),
-      this.add.ellipse(-14, -28, 16, 34, 0xffd982).setStrokeStyle(3, 0x8b4b2f),
-      this.add.ellipse(14, -28, 16, 34, 0xffd982).setStrokeStyle(3, 0x8b4b2f),
+      this.add.ellipse(0, 5, config.player.width, config.player.height, 0xf2bf73).setStrokeStyle(4, 0x101936),
+      this.add.ellipse(-14, -28, 16, 34, 0xf2bf73).setStrokeStyle(3, 0x101936),
+      this.add.ellipse(14, -28, 16, 34, 0xf2bf73).setStrokeStyle(3, 0x101936),
       this.add.text(0, 8, config.copy.roleLabels.player, {
       fontFamily: "Trebuchet MS, Arial",
       fontSize: "12px",
       fontStyle: "bold",
-      color: "#35241f"
+      color: "#101936"
       }).setOrigin(0.5)
     ]).setDepth(config.player.zIndex);
     this.player.setRotation(Phaser.Math.DegToRad(config.player.rotation));
 
     this.bun = this.createArtContainer("character-bun", "bun", [
-      this.add.ellipse(0, 5, config.bun.width, config.bun.height, 0x9b613d).setStrokeStyle(4, 0x35241f),
-      this.add.ellipse(-14, -28, 16, 34, 0x9b613d).setStrokeStyle(3, 0x35241f),
-      this.add.ellipse(14, -28, 16, 34, 0x9b613d).setStrokeStyle(3, 0x35241f),
-      this.add.circle(0, -5, 9, 0xffbd4a).setStrokeStyle(2, 0x35241f),
+      this.add.ellipse(0, 5, config.bun.width, config.bun.height, 0xf7f2ff).setStrokeStyle(4, 0x101936),
+      this.add.ellipse(-14, -28, 16, 34, 0xf7f2ff).setStrokeStyle(3, 0x101936),
+      this.add.ellipse(14, -28, 16, 34, 0xf7f2ff).setStrokeStyle(3, 0x101936),
+      this.add.circle(0, -5, 9, 0xc7b7ff).setStrokeStyle(2, 0x101936),
       this.add.text(0, 13, config.copy.roleLabels.lead, {
       fontFamily: "Trebuchet MS, Arial",
       fontSize: "13px",
       fontStyle: "bold",
-      color: "#35241f"
+      color: "#101936"
       }).setOrigin(0.5)
     ]).setDepth(config.bun.zIndex);
     this.bun.setRotation(Phaser.Math.DegToRad(config.bun.rotation));

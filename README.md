@@ -2,7 +2,7 @@
 
 Fast local reskin of the successful Catch Me If You Can game foundation.
 
-This first pass keeps the proven movement, collecting, chasing, hazard, credits, tuning, loading, modal, and restart behavior from the Banana Monkey/Catch Me line. It intentionally uses the Banana Monkey role flow: the lead character is active from the start, and the companion appears later as a follower. The current artwork and audio are placeholders copied from the previous working template so the game can be published and tested before final Restless Spirit assets arrive.
+This prototype keeps the proven Banana Monkey mechanic flow: the Ghost is playable from the start, the Coin appears later as the follower, the Bat is the first chaser, and the Pumpkin is the second chaser. Hannah's haunted mansion art and theme music are now active in the published build.
 
 ## Run Locally
 
@@ -25,7 +25,7 @@ Start here:
 src/gameConfig.js
 ```
 
-That file controls the title/copy, credits, music path, stage backgrounds, character sizes, speeds, hitboxes, UI positions, joystick zone, z-order, spawn margins, phase thresholds, and tuning storage keys.
+That file controls the title/copy, credits, music path, stage background, character sizes, speeds, hitboxes, UI positions, joystick zone, z-order, spawn margins, phase thresholds, SFX file choices, and tuning storage keys.
 
 ## Role Map
 
@@ -33,39 +33,39 @@ The game still uses the Catch Me mechanics internally, but the Restless Spirit s
 
 | Restless Spirit role | Current internal role | Browser-ready file |
 | --- | --- | --- |
-| Companion follower | `bunbun` / `player` | `public/assets/images/restless-spirit/characters/follower.png` |
-| Restless Spirit lead | `bun` / `lead` | `public/assets/images/restless-spirit/characters/lead.png` |
+| Coin follower | `bunbun` / `player` | `public/assets/images/restless-spirit/characters/follower.png` |
+| Ghost lead | `bun` / `lead` | `public/assets/images/restless-spirit/characters/lead.png` |
 | Spirit Light collectible | `banana` | `public/assets/images/restless-spirit/characters/collectible.png` |
 | Trap hazard | `bomb` | `public/assets/images/restless-spirit/characters/hazard.png` |
-| Shadow first chaser | `gorilla` | `public/assets/images/restless-spirit/characters/chaser-a.png` |
-| Night Watcher second chaser | `g2` | `public/assets/images/restless-spirit/characters/chaser-b.png` |
-| Default background | full-frame background | `public/assets/images/restless-spirit/backgrounds/background-default.png` |
-| Alternate background | full-frame background option | `public/assets/images/restless-spirit/backgrounds/background-alt.png` |
-| Concept modal image | concept image | `public/assets/images/restless-spirit/concept/concept.webp` |
-| Placeholder theme | background music | `public/assets/audio/music/restless-spirit-theme.mp3` |
+| Bat first chaser | `gorilla` | `public/assets/images/restless-spirit/characters/chaser-a.png` |
+| Pumpkin second chaser | `g2` | `public/assets/images/restless-spirit/characters/chaser-b.png` |
+| Haunted mansion background | full-frame background | `public/assets/images/restless-spirit/backgrounds/background-default.png` |
+| Game art modal image | concept image | `public/assets/images/restless-spirit/concept/concept.png` |
+| Hannah theme | background music | `public/assets/audio/music/restless-spirit-theme.mp3` |
+| File-based event SFX | pickup / hit / hazard sounds | `public/assets/audio/sfx/` |
 
-Original/source placeholder files are archived in `asset-sources/restless-spirit/`. Final uploaded source files should also be kept in `/Users/ba/Desktop/A-Z/Projects/Codex/Assets/Raw/restless-spirit/`. Only optimized game-ready copies should live under `public/assets/images/restless-spirit/`.
+Original/source files are archived in `asset-sources/restless-spirit/`. The uploaded `restless-spirit-original-drawing.jpg` is intentionally excluded from the game and archive for this pass.
 
 ## Current Draft
 
-- Default background is active; alternate background is available in the tuning panel.
-- Restless Spirit starts as the lead character.
-- Companion appears after 9 spirit lights and follows the lead.
+- Haunted mansion is the only active background in the tuning selector.
+- Ghost starts as the lead character.
+- Coin appears after 9 spirit lights and follows the lead.
 - Keyboard movement with arrow keys and WASD.
 - Floating joystick for mouse/touch.
 - Spirit Light scoring, hearts, two staged chasers, trap hazard, combo bonus, invincibility, auto-restart, and music toggle.
-- Credits are placeholder-safe until the final student/public credit and link are provided.
+- Soundtrack starts only from real movement. Event SFX use file-based WAV clips so mobile joystick movement unlocks music and SFX together.
+- Credits show Hannah's YouTube music link and Le Binh Anh Nguyen game design/development credit.
 - Debug panel toggles with backtick or F2; tuning panel toggles with `T`.
+
+## Credits
+
+- Original music and characters by Hannah: `https://www.youtube.com/watch?v=Woz_xv3eIcM`
+- Game design and development by Le Binh Anh Nguyen and Codex.
 
 ## Publish Notes
 
 - GitHub repository: `https://github.com/babybanh/restless-spirit.git`
 - Live Vercel link: `https://restless-spirit.vercel.app`
 - First prototype commit: `6679987` (`Build Restless Spirit prototype`)
-- Keep deployment and gameplay commits easy to review.
-
-## First-Pass Boundaries
-
-- Working prototype first; final art/audio swap next.
-- Placeholder assets must be replaced before the final student-facing release.
-- Do not copy from Attack of Ziziphus for this project.
+- Final asset swap commit: recorded in git history after this pass.

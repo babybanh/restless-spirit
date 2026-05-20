@@ -30,7 +30,7 @@ const phaserConfig = {
   width: gameConfig.game.designWidth,
   height: gameConfig.game.designHeight,
   resolution: Math.min(window.devicePixelRatio || 1, 2),
-  backgroundColor: "#f7c88f",
+  backgroundColor: "#08112e",
   render: {
     antialias: true,
     antialiasGL: true,
