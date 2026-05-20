@@ -15,7 +15,7 @@ Source archive:
 | Bat first chaser | `characters/chaser-a.png` | `asset-sources/restless-spirit/source-chaser-bat.png` | First staged chaser. |
 | Pumpkin second chaser | `characters/chaser-b.png` | `asset-sources/restless-spirit/source-chaser-pumpkin.png` | Second staged chaser. |
 | Haunted mansion background | `backgrounds/background-default.png` | `asset-sources/restless-spirit/source-background-haunted-mansion.png` | Source upload was named `hunated-mansion.png`; this is the only active background. |
-| Game art modal | `concept/concept.png` | `asset-sources/restless-spirit/source-background-haunted-mansion.png` | Small optimized mansion art. The original drawing is not used. |
+| Game art modal | `concept/game-art.png` | `asset-sources/restless-spirit/source-background-haunted-mansion.png` | Small optimized mansion art. The original drawing is not used. |
 
 Audio:
 

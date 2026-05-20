@@ -468,7 +468,7 @@ export const gameConfig = {
   },
 
   concept: {
-    imagePath: "/assets/images/restless-spirit/concept/concept.png",
+    imagePath: "/assets/images/restless-spirit/concept/game-art.png",
     title: "Game Art",
     subtitle: "Hannah's haunted mansion stage art",
     buttonLabel: "Tap title to view the game art",

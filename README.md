@@ -40,7 +40,7 @@ The game still uses the Catch Me mechanics internally, but the Restless Spirit s
 | Bat first chaser | `gorilla` | `public/assets/images/restless-spirit/characters/chaser-a.png` |
 | Pumpkin second chaser | `g2` | `public/assets/images/restless-spirit/characters/chaser-b.png` |
 | Haunted mansion background | full-frame background | `public/assets/images/restless-spirit/backgrounds/background-default.png` |
-| Game art modal image | concept image | `public/assets/images/restless-spirit/concept/concept.png` |
+| Game art modal image | concept image | `public/assets/images/restless-spirit/concept/game-art.png` |
 | Hannah theme | background music | `public/assets/audio/music/restless-spirit-theme.mp3` |
 | File-based event SFX | pickup / hit / hazard sounds | `public/assets/audio/sfx/` |
 
