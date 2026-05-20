@@ -784,7 +784,9 @@ function resizeLayer(config, root, layer) {
 
 function updateJoystickView(elements, joystick, config, state) {
   setCircle(elements.joystickHint, config.bottomControls.joystickHintX, config.bottomControls.joystickHintY, config.bottomControls.joystickHintRadius);
-  elements.joystickHint.classList.toggle("joystick-hint--intro", Boolean(elements.startScreen) && !joystick.active);
+  const showingIntroHint = Boolean(elements.startScreen) && !joystick.active;
+  elements.joystickHint.classList.toggle("joystick-hint--intro", showingIntroHint);
+  elements.joystickHint.style.zIndex = showingIntroHint ? "130" : String(config.bottomControls.zIndex + 1);
   elements.joystickHint.style.opacity = joystick.active || state.hideJoystickHint ? "0" : "1";
   elements.joystickBase.style.display = joystick.active ? "block" : "none";
   elements.joystickKnob.style.display = joystick.active ? "block" : "none";
