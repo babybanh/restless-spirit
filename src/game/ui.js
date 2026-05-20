@@ -27,6 +27,7 @@ export function createGameUi(config, root, state, input) {
     toggleSfx: audio.toggleSfx,
     isSfxEnabled: () => audio.sfxEnabled,
     showComboPopup,
+    showHitPopup,
     savePanelState: () => savePanelState(config, state),
     onStart: null,
     onRestart: null
@@ -212,6 +213,21 @@ export function createGameUi(config, root, state, input) {
     window.clearTimeout(elements.comboPopupTimer);
     elements.comboPopupTimer = window.setTimeout(() => {
       popup.classList.remove("combo-popup--show");
+    }, config.combo.popupDurationMs);
+  }
+
+  function showHitPopup(text, x, y) {
+    const popup = elements.hitPopup;
+    if (!popup) return;
+    popup.textContent = text;
+    popup.style.left = px(x);
+    popup.style.top = px(y);
+    popup.classList.remove("hit-popup--show");
+    void popup.offsetWidth;
+    popup.classList.add("hit-popup--show");
+    window.clearTimeout(elements.hitPopupTimer);
+    elements.hitPopupTimer = window.setTimeout(() => {
+      popup.classList.remove("hit-popup--show");
     }, config.combo.popupDurationMs);
   }
 
@@ -417,7 +433,12 @@ function createHud(elements, layer, config, state, audio) {
   comboPopup.textContent = "Combo x3! +3";
   comboPopup.style.zIndex = config.combo.zIndex;
 
-  layer.append(bottomControls, joystickHint, topBar, title, score, bananaCount, hearts, sound, credits, restart, comboPopup);
+  const hitPopup = document.createElement("div");
+  hitPopup.className = "hit-popup";
+  hitPopup.textContent = "-1 Heart";
+  hitPopup.style.zIndex = config.combo.zIndex;
+
+  layer.append(bottomControls, joystickHint, topBar, title, score, bananaCount, hearts, sound, credits, restart, comboPopup, hitPopup);
   elements.bottomControls = bottomControls;
   elements.joystickHint = joystickHint;
   elements.title = title;
@@ -429,6 +450,8 @@ function createHud(elements, layer, config, state, audio) {
   elements.restart = restart;
   elements.comboPopup = comboPopup;
   elements.comboPopupTimer = 0;
+  elements.hitPopup = hitPopup;
+  elements.hitPopupTimer = 0;
 }
 
 function createTutorialPrompt(elements, layer, config) {

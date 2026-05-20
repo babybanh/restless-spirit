@@ -244,7 +244,8 @@ body.is-loading #ui-root {
   color: #5e38c9;
 }
 
-.combo-popup {
+.combo-popup,
+.hit-popup {
   position: absolute;
   width: 230px;
   margin-left: -115px;
@@ -265,7 +266,15 @@ body.is-loading #ui-root {
   will-change: transform, opacity;
 }
 
+.hit-popup {
+  color: #e24c6f;
+}
+
 .combo-popup--show {
+  animation: combo-float 850ms ease-out forwards;
+}
+
+.hit-popup--show {
   animation: combo-float 850ms ease-out forwards;
 }
 

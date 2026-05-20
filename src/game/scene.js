@@ -1315,6 +1315,7 @@ export class RestlessSpiritScene extends Phaser.Scene {
   damagePlayer(now, damage = this.configData.gorilla.damage) {
     this.playSfx("bunnyHit");
     this.state.hearts = Math.max(0, this.state.hearts - damage);
+    this.showHitPopup(damage);
     this.state.invincibleUntil = now + this.configData.player.invincibilityMs;
 
     if (this.state.hearts <= 0) {
@@ -1414,6 +1415,14 @@ export class RestlessSpiritScene extends Phaser.Scene {
     const lead = this.getLeadCharacter();
     if (this.ui.showComboPopup) {
       this.ui.showComboPopup(text, lead.x, lead.y - 42);
+    }
+  }
+
+  showHitPopup(damage) {
+    const lead = this.getLeadCharacter();
+    const label = damage === 1 ? "-1 Heart" : `-${damage} Hearts`;
+    if (this.ui.showHitPopup) {
+      this.ui.showHitPopup(label, lead.x, lead.y - 34);
     }
   }
 
