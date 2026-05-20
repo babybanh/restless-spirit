@@ -193,10 +193,10 @@ export const gameConfig = {
 
   secondGorilla: {
     spawnAtBananas: 18,
-    width: 72,
-    height: 72,
-    hitboxWidth: 50,
-    hitboxHeight: 50,
+    width: 68,
+    height: 68,
+    hitboxWidth: 46,
+    hitboxHeight: 46,
     speed: 80,
     damage: 1,
     wanderTurnMs: 1200,
@@ -271,13 +271,13 @@ export const gameConfig = {
       },
       gorilla: {
         path: "/assets/images/restless-spirit/characters/chaser-a.png",
-        scale: 1.45,
+        scale: 1.6,
         offsetX: 0,
         offsetY: 0
       },
       g2: {
         path: "/assets/images/restless-spirit/characters/chaser-b.png",
-        scale: 1.55,
+        scale: 1.3,
         offsetX: 0,
         offsetY: 0
       }
