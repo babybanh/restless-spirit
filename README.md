@@ -60,7 +60,8 @@ Original/source placeholder files are archived in `asset-sources/restless-spirit
 ## Publish Notes
 
 - GitHub repository: `https://github.com/babybanh/restless-spirit.git`
-- Vercel link: to be filled after deployment.
+- Live Vercel link: `https://restless-spirit.vercel.app`
+- First prototype commit: `6679987` (`Build Restless Spirit prototype`)
 - Keep deployment and gameplay commits easy to review.
 
 ## First-Pass Boundaries
