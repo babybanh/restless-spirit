@@ -1,19 +1,19 @@
 export const gameConfig = {
   copy: {
     title: "Restless Spirit",
-    startPrompt: "Move Ghost. Coin joins at 9 lights.",
+    startPrompt: "Use the joystick or arrow keys to move Restless Spirit.",
     gameOverTitle: "Game Over",
     restartLabel: "Restart",
     scoreLabel: "Score",
     musicOnLabel: "Music: On",
     musicOffLabel: "Music: Off",
     creditsLabel: "Credits",
-    conceptAlt: "Haunted mansion game art for Restless Spirit",
+    conceptAlt: "Hannah's original ghost drawing for Restless Spirit",
     roleLabels: {
-      player: "Coin",
+      player: "Shiny Coin",
       lead: "Ghost",
-      collectible: "Spirit Light",
-      collectiblePlural: "Spirit Lights",
+      collectible: "Coin",
+      collectiblePlural: "Coins",
       chaser: "Bat",
       secondChaser: "Pumpkin",
       hazard: "Trap"
@@ -45,7 +45,7 @@ export const gameConfig = {
     promptY: 628,
     promptWidth: 460,
     promptFontSize: 15,
-    promptText: "Use the joystick or arrow keys to move the player.",
+    promptText: "Use the joystick or arrow keys to move Restless Spirit.",
     completeAfterFirstBanana: true
   },
 
@@ -247,18 +247,24 @@ export const gameConfig = {
     characters: {
       bunbun: {
         path: "/assets/images/restless-spirit/characters/follower.png",
-        scale: 1.45,
+        scale: 1.25,
         offsetX: 0,
         offsetY: 0
       },
       bun: {
         path: "/assets/images/restless-spirit/characters/lead.png",
-        scale: 1.65,
+        scale: 1.55,
         offsetX: 0,
         offsetY: -2
       },
       banana: {
         path: "/assets/images/restless-spirit/characters/collectible.png",
+        scale: 1.4,
+        offsetX: 0,
+        offsetY: 0
+      },
+      bananaAlt: {
+        path: "/assets/images/restless-spirit/characters/collectible-alt.png",
         scale: 1.4,
         offsetX: 0,
         offsetY: 0
@@ -277,7 +283,7 @@ export const gameConfig = {
       },
       g2: {
         path: "/assets/images/restless-spirit/characters/chaser-b.png",
-        scale: 1.3,
+        scale: 1.55,
         offsetX: 0,
         offsetY: 0
       }
@@ -468,14 +474,14 @@ export const gameConfig = {
   },
 
   concept: {
-    imagePath: "/assets/images/restless-spirit/concept/game-art.png",
-    title: "Hannah's Restless Spirit concept",
-    subtitle: "Haunted mansion stage art",
-    buttonLabel: "Tap title to view the game art",
+    imagePath: "/assets/images/restless-spirit/concept/original-ghost-concept.jpg",
+    title: "Original Game Idea",
+    subtitle: "Hannah's Restless Spirit concept",
+    buttonLabel: "Tap title to view the concept",
     imageX: 360,
     imageY: 378,
-    imageWidth: 340,
-    imageHeight: 392
+    imageWidth: 300,
+    imageHeight: 430
   },
 
   credits: {
@@ -521,7 +527,7 @@ export const gameConfig = {
     promptY: 610,
     promptWidth: 500,
     promptFontSize: 15,
-    promptText: "Move Ghost. Coin joins at 9 lights.",
+    promptText: "Use the joystick or arrow keys to move Restless Spirit.",
     tapText: "Tap the player to play",
     tapTextY: 470,
     computerButtonX: 130,

@@ -482,8 +482,9 @@ body.is-loading #ui-root {
   box-sizing: border-box;
   width: min(548px, 100%);
   max-width: 560px;
-  max-height: calc(100vh - 28px);
-  overflow: auto;
+  max-height: calc(100% - 28px);
+  overflow-y: auto;
+  overflow-x: hidden;
   padding: 22px;
   border-radius: 26px;
   color: var(--cocoa);
@@ -535,10 +536,10 @@ body.is-loading #ui-root {
 
 .concept-image {
   display: block;
-  width: min(var(--concept-image-width, 430px), 100%);
+  width: auto;
   height: auto;
-  max-width: 100%;
-  max-height: min(var(--concept-image-max-height, 392px), 52vh);
+  max-width: min(var(--concept-image-width, 430px), 100%);
+  max-height: var(--concept-image-max-height, 392px);
   margin: 0 auto;
   object-fit: contain;
   border-radius: 18px;
@@ -546,18 +547,18 @@ body.is-loading #ui-root {
 }
 
 .concept-modal .soft-modal-card {
-  width: min(430px, 100%);
+  width: min(390px, calc(100% - 36px));
 }
 
 .concept-modal .modal-title {
   max-width: 320px;
-  margin-bottom: 12px;
+  margin-bottom: 8px;
   padding: 0 34px;
   font-size: 25px;
 }
 
 .concept-modal .modal-subtitle {
-  margin: 0 20px 16px;
+  margin: 0 20px 14px;
 }
 
 .modal-copy {
@@ -664,11 +665,13 @@ body.is-loading #ui-root {
   }
 
   .concept-image {
-    max-height: 50vh;
+    max-width: min(var(--concept-image-width, 300px), 100%);
+    max-height: var(--concept-image-max-height, 430px);
   }
 
   .concept-modal .soft-modal-card {
-    padding: 18px 16px 20px;
+    width: min(380px, calc(100% - 28px));
+    padding: 18px 18px 20px;
   }
 
   .concept-modal .modal-title {
@@ -677,6 +680,37 @@ body.is-loading #ui-root {
 
   .concept-modal .modal-subtitle {
     margin-bottom: 12px;
+  }
+
+  .credits-modal .soft-modal-card {
+    width: 500px;
+    max-width: calc(100% - 36px);
+    padding: 30px 34px 28px;
+  }
+
+  .credits-modal .modal-title {
+    max-width: 390px;
+    margin: 8px auto 20px;
+    padding: 0;
+    font-size: 26px;
+    line-height: 1;
+  }
+
+  .credits-copy {
+    margin: 18px auto 0;
+    max-width: 400px;
+    font-size: 16px;
+    line-height: 1.35;
+  }
+
+  .credits-copy + .credits-copy {
+    margin-top: 18px;
+  }
+
+  .credits-copy a,
+  .credits-copy .credits-name {
+    margin-top: 2px;
+    font-size: 19px;
   }
 
 }

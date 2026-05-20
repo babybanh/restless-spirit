@@ -19,6 +19,7 @@ export class RestlessSpiritScene extends Phaser.Scene {
     if (selectedFullFrame) this.load.image(`full-frame-${selectedFullFrame.id}`, selectedFullFrame.path);
     this.load.image("character-bunbun", config.art.characters.bunbun.path);
     this.load.image("character-banana", config.art.characters.banana.path);
+    this.load.image("character-banana-alt", config.art.characters.bananaAlt.path);
     if (selectedPlayfield) this.load.image(`playfield-${selectedPlayfield.id}`, selectedPlayfield.path);
 
     if (config.art.consoleFramePath) this.load.image("console-frame", config.art.consoleFramePath);
@@ -33,7 +34,7 @@ export class RestlessSpiritScene extends Phaser.Scene {
       }
     }
     for (const [name, art] of Object.entries(config.art.characters)) {
-      if (name !== "bunbun" && name !== "banana") {
+      if (name !== "bunbun" && name !== "banana" && name !== "bananaAlt") {
         this.load.image(`character-${name}`, art.path);
       }
     }
@@ -524,6 +525,7 @@ export class RestlessSpiritScene extends Phaser.Scene {
     container.artName = artName;
     if (this.textures.exists(textureKey)) {
       container.assetImage = this.add.image(0, 0, textureKey).setOrigin(0.5);
+      container.currentTextureKey = textureKey;
       container.add(container.assetImage);
     } else {
       container.add(fallbackChildren);
@@ -536,6 +538,12 @@ export class RestlessSpiritScene extends Phaser.Scene {
     const art = this.configData.art.characters[container.artName];
     container.assetImage.setPosition(art.offsetX, art.offsetY);
     container.assetImage.setDisplaySize(width * art.scale, height * art.scale);
+  }
+
+  setContainerTexture(container, textureKey) {
+    if (!container.assetImage || container.currentTextureKey === textureKey || !this.textures.exists(textureKey)) return;
+    container.assetImage.setTexture(textureKey);
+    container.currentTextureKey = textureKey;
   }
 
   createBananaSprite() {
@@ -976,6 +984,10 @@ export class RestlessSpiritScene extends Phaser.Scene {
     }
     for (let index = 0; index < this.bananaSprites.length; index += 1) {
       const banana = this.state.bananas[index];
+      this.setContainerTexture(
+        this.bananaSprites[index],
+        this.getBananaTextureKey(index)
+      );
       this.applyContainerArt(this.bananaSprites[index], config.banana.width, config.banana.height);
       this.bananaSprites[index].setVisible(Boolean(banana));
       if (banana) {
@@ -1013,6 +1025,10 @@ export class RestlessSpiritScene extends Phaser.Scene {
     const wiggle = Math.sin(t * 1.7) * config.idleCueRotation;
     sprite.setScale(1 + Math.max(0, pulse));
     sprite.setRotation(Phaser.Math.DegToRad(config.rotation + wiggle));
+  }
+
+  getBananaTextureKey(index) {
+    return index === 0 ? "character-banana" : "character-banana-alt";
   }
 
   updateFollower(deltaMs) {
