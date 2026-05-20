@@ -698,13 +698,12 @@ body.is-loading #ui-root {
     transform: none;
   }
 
-  #loading-screen::before,
   .start-blur-layer {
-    filter: none;
-    transform: none;
+    filter: blur(5px) saturate(1.04);
+    transform: scale(1.012);
     -webkit-mask-image: none;
     mask-image: none;
-    opacity: 0.82;
+    opacity: 1;
   }
 
   .soft-modal-overlay {
