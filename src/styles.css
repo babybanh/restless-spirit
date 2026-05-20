@@ -244,6 +244,42 @@ body.is-loading #ui-root {
   color: #5e38c9;
 }
 
+.combo-popup {
+  position: absolute;
+  width: 230px;
+  margin-left: -115px;
+  transform: translate3d(0, 0, 0);
+  opacity: 0;
+  color: #7d55e3;
+  font-size: 22px;
+  font-weight: 900;
+  line-height: 1;
+  text-align: center;
+  text-shadow:
+    -2px -2px 0 #fffafd,
+    2px -2px 0 #fffafd,
+    -2px 2px 0 #fffafd,
+    2px 2px 0 #fffafd,
+    0 5px 14px rgba(5, 10, 33, 0.28);
+  pointer-events: none;
+  will-change: transform, opacity;
+}
+
+.combo-popup--show {
+  animation: combo-float 850ms ease-out forwards;
+}
+
+@keyframes combo-float {
+  0% {
+    opacity: 1;
+    transform: translate3d(0, 0, 0);
+  }
+  100% {
+    opacity: 0;
+    transform: translate3d(0, -38px, 0);
+  }
+}
+
 .tutorial-prompt {
   position: absolute;
   padding: 10px 14px;
@@ -655,8 +691,11 @@ body.is-loading #ui-root {
 
   #loading-screen::before,
   .start-blur-layer {
-    filter: blur(3px) saturate(1.02);
-    transform: scale(1.006);
+    filter: none;
+    transform: none;
+    -webkit-mask-image: none;
+    mask-image: none;
+    opacity: 0.82;
   }
 
   .soft-modal-overlay {

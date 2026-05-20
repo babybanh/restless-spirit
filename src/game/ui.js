@@ -26,6 +26,7 @@ export function createGameUi(config, root, state, input) {
     previewSfx: audio.previewSfx,
     toggleSfx: audio.toggleSfx,
     isSfxEnabled: () => audio.sfxEnabled,
+    showComboPopup,
     savePanelState: () => savePanelState(config, state),
     onStart: null,
     onRestart: null
@@ -173,10 +174,10 @@ export function createGameUi(config, root, state, input) {
 
   function update(debugData) {
     currentBackdropPath = updatePageBackdrop(config, currentBackdropPath);
-    elements.score.textContent = `${config.copy.scoreLabel}: ${state.score}`;
-    elements.bananaCount.textContent = `${config.copy.roleLabels.collectiblePlural}: ${state.bananaCount}`;
-    elements.hearts.textContent = "♥".repeat(state.hearts);
-    elements.sound.textContent = state.soundMuted ? config.copy.musicOffLabel : config.copy.musicOnLabel;
+    setTextIfChanged(elements.score, `${config.copy.scoreLabel}: ${state.score}`);
+    setTextIfChanged(elements.bananaCount, `${config.copy.roleLabels.collectiblePlural}: ${state.bananaCount}`);
+    setTextIfChanged(elements.hearts, "♥".repeat(state.hearts));
+    setTextIfChanged(elements.sound, state.soundMuted ? config.copy.musicOffLabel : config.copy.musicOnLabel);
     elements.tutorialPrompt.style.display = state.tutorialActive ? "block" : "none";
     elements.debug.style.display = state.debugVisible ? "block" : "none";
     elements.tuning.style.display = state.tuningVisible ? "block" : "none";
@@ -197,6 +198,21 @@ export function createGameUi(config, root, state, input) {
     copyConfigValues(defaultConfig, config);
     audio.resetToConfig();
     updateTuningValues(elements, config);
+  }
+
+  function showComboPopup(text, x, y) {
+    const popup = elements.comboPopup;
+    if (!popup) return;
+    popup.textContent = text;
+    popup.style.left = px(x);
+    popup.style.top = px(y);
+    popup.classList.remove("combo-popup--show");
+    void popup.offsetWidth;
+    popup.classList.add("combo-popup--show");
+    window.clearTimeout(elements.comboPopupTimer);
+    elements.comboPopupTimer = window.setTimeout(() => {
+      popup.classList.remove("combo-popup--show");
+    }, config.combo.popupDurationMs);
   }
 
   function showConceptOverlay() {
@@ -396,7 +412,12 @@ function createHud(elements, layer, config, state, audio) {
   }, config);
   restart.style.display = "none";
 
-  layer.append(bottomControls, joystickHint, topBar, title, score, bananaCount, hearts, sound, credits, restart);
+  const comboPopup = document.createElement("div");
+  comboPopup.className = "combo-popup";
+  comboPopup.textContent = "Combo x3! +3";
+  comboPopup.style.zIndex = config.combo.zIndex;
+
+  layer.append(bottomControls, joystickHint, topBar, title, score, bananaCount, hearts, sound, credits, restart, comboPopup);
   elements.bottomControls = bottomControls;
   elements.joystickHint = joystickHint;
   elements.title = title;
@@ -406,6 +427,8 @@ function createHud(elements, layer, config, state, audio) {
   elements.sound = sound;
   elements.credits = credits;
   elements.restart = restart;
+  elements.comboPopup = comboPopup;
+  elements.comboPopupTimer = 0;
 }
 
 function createTutorialPrompt(elements, layer, config) {
@@ -791,6 +814,12 @@ function positionLiftedObject(element, centerX, centerY, width, height) {
   element.style.top = px(centerY - height / 2);
   element.style.width = px(width);
   element.style.height = px(height);
+}
+
+function setTextIfChanged(element, text) {
+  if (element.textContent !== text) {
+    element.textContent = text;
+  }
 }
 
 function formatDebugText(debugData, state, input, config) {
