@@ -73,8 +73,8 @@ export const gameConfig = {
   },
 
   bun: {
-    width: 64,
-    height: 72,
+    width: 68,
+    height: 68,
     hitboxWidth: 42,
     hitboxHeight: 48,
     speed: 335,
@@ -141,9 +141,9 @@ export const gameConfig = {
   },
 
   gorilla: {
-    width: 96,
-    height: 56,
-    hitboxWidth: 54,
+    width: 80,
+    height: 80,
+    hitboxWidth: 50,
     hitboxHeight: 38,
     speed: 80,
     bounceSpeed: 80,
@@ -253,7 +253,7 @@ export const gameConfig = {
       },
       bun: {
         path: "/assets/images/restless-spirit/characters/lead.png",
-        scale: 1.7,
+        scale: 1.65,
         offsetX: 0,
         offsetY: -2
       },
@@ -271,7 +271,7 @@ export const gameConfig = {
       },
       gorilla: {
         path: "/assets/images/restless-spirit/characters/chaser-a.png",
-        scale: 1.55,
+        scale: 1.45,
         offsetX: 0,
         offsetY: 0
       },
