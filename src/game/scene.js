@@ -257,6 +257,9 @@ export class RestlessSpiritScene extends Phaser.Scene {
   }
 
   startGame(playMode = this.configData.controls.playMode) {
+    if (this.pendingDamageRespawn) this.pendingDamageRespawn.remove(false);
+    this.pendingDamageRespawn = null;
+    this.damageFreezeUntil = 0;
     this.configData.controls.playMode = playMode;
     this.state.introActive = false;
     if (playMode === "touchscreen") {
@@ -280,6 +283,11 @@ export class RestlessSpiritScene extends Phaser.Scene {
   }
 
   updatePlayer(deltaMs) {
+    if (this.time.now < (this.damageFreezeUntil || 0)) {
+      this.inputController.resetMovement();
+      return;
+    }
+
     const config = this.configData;
     const seconds = deltaMs / 1000;
     const direction = this.inputController.getDirection();
@@ -1312,16 +1320,101 @@ export class RestlessSpiritScene extends Phaser.Scene {
     return touchesLead || touchesFollower;
   }
 
+  respawnLeadAfterDamage() {
+    this.pendingDamageRespawn = null;
+    this.damageFreezeUntil = 0;
+    if (this.state.status !== "playing") return;
+    const lead = this.getLeadCharacter();
+    const target = this.chooseSafestRespawnCorner();
+    lead.x = target.x;
+    lead.y = target.y;
+    lead.trail = [];
+    this.resetFollowerAfterRespawn();
+    this.inputController.resetMovement();
+    this.syncSprites();
+  }
+
+  chooseSafestRespawnCorner() {
+    const lead = this.getLeadCharacter();
+    const hazards = this.getRespawnHazards();
+    const corners = this.getRespawnCorners();
+    const currentCorner = corners.reduce((nearest, corner, index) => {
+      const distance = distanceBetween(lead, corner);
+      return distance < nearest.distance ? { index, distance } : nearest;
+    }, { index: 0, distance: Infinity });
+
+    const candidates = corners
+      .map((corner, index) => {
+        const distances = hazards.map((hazard) => distanceBetween(corner, hazard));
+        const clearance = distances.length ? Math.min(...distances) : distanceBetween(corner, lead);
+        const totalDistance = distances.length ? distances.reduce((sum, distance) => sum + distance, 0) : clearance;
+        return { ...corner, index, clearance, totalDistance };
+      })
+      .filter((corner) => corners.length < 2 || corner.index !== currentCorner.index);
+
+    return candidates.sort((a, b) => (
+      b.clearance - a.clearance ||
+      b.totalDistance - a.totalDistance ||
+      a.index - b.index
+    ))[0] || corners[currentCorner.index];
+  }
+
+  getRespawnCorners() {
+    const playArea = this.configData.playArea;
+    const leadSize = this.getVisibleSize(this.getLeadConfig(), this.getLeadArtName());
+    const cornerInset = 112;
+    const insetX = Math.max(playArea.spawnMargin, leadSize.width / 2 + 4, cornerInset);
+    const insetY = Math.max(playArea.spawnMargin, leadSize.height / 2 + 4, cornerInset);
+    return [
+      { x: playArea.x + insetX, y: playArea.y + insetY },
+      { x: playArea.x + playArea.width - insetX, y: playArea.y + insetY },
+      { x: playArea.x + insetX, y: playArea.y + playArea.height - insetY },
+      { x: playArea.x + playArea.width - insetX, y: playArea.y + playArea.height - insetY }
+    ];
+  }
+
+  getRespawnHazards() {
+    const hazards = [];
+    if (this.state.gorilla.spawned && !this.state.gorilla.respawning) hazards.push(this.state.gorilla);
+    if (this.state.secondGorilla.spawned && !this.state.secondGorilla.respawning) hazards.push(this.state.secondGorilla);
+    hazards.push(...this.state.bombs);
+    return hazards;
+  }
+
+  resetFollowerAfterRespawn() {
+    const lead = this.getLeadCharacter();
+    const followerActive = Boolean(this.state.followerActive ?? this.state.bunActive);
+    const followerPoint = followerActive || lead === this.state.bun
+      ? this.pointBehindBun(this.configData.follower.minDistance)
+      : { x: lead.x, y: lead.y };
+
+    this.state.follower.x = followerPoint.x;
+    this.state.follower.y = followerPoint.y;
+    this.state.follower.velocityX = 0;
+    this.state.follower.velocityY = 0;
+    this.state.follower.dashState = "ready";
+    this.state.follower.dashTimerMs = 0;
+    this.state.follower.dashCooldownMs = 0;
+    this.state.follower.dashVelocityX = 0;
+    this.state.follower.dashVelocityY = 0;
+
+    if (followerActive || lead === this.state.bun) {
+      this.state.player.x = followerPoint.x;
+      this.state.player.y = followerPoint.y;
+      this.state.player.trail = [];
+    }
+  }
+
   damagePlayer(now, damage = this.configData.gorilla.damage) {
     this.playSfx("bunnyHit");
     this.state.hearts = Math.max(0, this.state.hearts - damage);
     this.showHitPopup(damage);
     this.state.invincibleUntil = now + this.configData.player.invincibilityMs;
+    this.inputController.resetMovement();
 
     if (this.state.hearts <= 0) {
       this.playSfx("gameOver");
       this.state.status = "game-over";
-      this.inputController.resetMovement();
       if (this.configData.flow.gameOverOverlayEnabled) {
         this.ui.showGameOver();
       } else {
@@ -1329,6 +1422,10 @@ export class RestlessSpiritScene extends Phaser.Scene {
           if (this.state.status === "game-over") this.startGame();
         });
       }
+    } else {
+      this.damageFreezeUntil = now + 220;
+      if (this.pendingDamageRespawn) this.pendingDamageRespawn.remove(false);
+      this.pendingDamageRespawn = this.time.delayedCall(220, () => this.respawnLeadAfterDamage());
     }
   }
 
