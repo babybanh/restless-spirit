@@ -253,28 +253,105 @@ export function createGameUi(config, root, state, input) {
   function showCreditsOverlay() {
     showSoftModal({
       className: "credits-modal",
-      title: config.credits.contestTitle,
-      titleHref: config.credits.contestUrl,
+      title: config.credits.gameTitle || config.copy?.title || config.credits.contestTitle,
       subtitle: "",
       body: (modal) => {
-        const original = document.createElement("p");
-        original.className = "credits-copy";
-        const studentCredit = config.credits.musicUrl
-          ? `<a href="${config.credits.musicUrl}" target="_blank" rel="noreferrer">${config.credits.studentName}</a>`
-          : `<span class="credits-name">${config.credits.studentName}</span>`;
-        original.innerHTML = `<span>Original music and characters by</span>${studentCredit}`;
-
-        const design = document.createElement("p");
-        design.className = "credits-copy";
-        design.innerHTML = `<span>Game design and development by</span><a href="mailto:${config.credits.designerEmail}">${config.credits.designerName}</a>`;
-
-        modal.append(original, design);
+        appendCreditSection(modal, {
+          ariaLabel: "Music and characters credit",
+          linePrefix: "Music and characters by",
+          lineName: config.credits.studentName,
+          links: [
+            {
+              href: config.credits.musicUrl,
+              label: "Watch performance",
+              ariaLabel: `Watch ${config.credits.studentName}'s performance on YouTube`
+            }
+          ]
+        });
+        appendCreditSection(modal, {
+          ariaLabel: "Game design and development credit",
+          linePrefix: "Game created by",
+          lineName: config.credits.designerName,
+          links: [
+            {
+              href: config.credits.developerUrl,
+              label: "Visit website",
+              ariaLabel: "Visit Le Binh Anh Nguyen's website"
+            }
+          ]
+        });
+        appendCreditSection(modal, {
+          ariaLabel: "Contest credit",
+          linePrefix: "From the",
+          lineName: config.credits.contestName || "Piano Inspires Kids Composition Contest",
+          linkRow: true,
+          links: [
+            {
+              href: config.credits.contestMagazineUrl,
+              label: "Read the magazine",
+              ariaLabel: "Read the Piano Inspires Kids magazine"
+            },
+            {
+              href: config.credits.contestPlaylistUrl || config.credits.contestUrl,
+              label: "Watch winners playlist",
+              ariaLabel: "Watch Piano Inspires Kids Composition Contest winners playlist on YouTube"
+            }
+          ]
+        });
       }
     });
   }
 
+  function appendCreditSection(modal, { ariaLabel, linePrefix, lineName, links, linkRow = false }) {
+    const section = document.createElement("section");
+    section.className = "credits-copy";
+    section.setAttribute("aria-label", ariaLabel);
+
+    const line = document.createElement("span");
+    line.className = "credits-line";
+    line.append(`${linePrefix} `);
+
+    const name = document.createElement("span");
+    name.className = "credits-name";
+    name.textContent = lineName;
+    line.append(name);
+    section.append(line);
+
+    const liveLinks = links
+      .map(({ href, label, ariaLabel: linkAriaLabel }) => createCreditsLink(href, label, linkAriaLabel))
+      .filter(Boolean);
+
+    if (linkRow) {
+      const row = document.createElement("div");
+      row.className = "credits-link-row";
+      row.append(...liveLinks);
+      section.append(row);
+    } else {
+      section.append(...liveLinks);
+    }
+
+    modal.append(section);
+  }
+
+  function createCreditsLink(href, label, ariaLabel) {
+    if (!href) return null;
+    const link = document.createElement("a");
+    link.className = "credits-link";
+    link.href = href;
+    link.target = "_blank";
+    link.rel = "noreferrer";
+    link.textContent = label;
+    link.setAttribute("aria-label", ariaLabel);
+    return link;
+  }
+
   function showSoftModal({ className, title, titleHref, subtitle, ariaLabel, body }) {
-    if (elements.softModal) elements.softModal.remove();
+    if (elements.closeSoftModal) {
+      elements.closeSoftModal();
+    } else if (elements.softModal) {
+      elements.softModal.remove();
+      elements.softModal = null;
+    }
 
     const overlay = document.createElement("div");
     overlay.className = `soft-modal-overlay ${className}`;
@@ -291,10 +368,16 @@ export function createGameUi(config, root, state, input) {
     close.dataset.uiControl = "true";
     close.textContent = "×";
     close.setAttribute("aria-label", "Close");
-    close.addEventListener("click", () => {
+    const closeModal = () => {
+      window.removeEventListener("keydown", handleKeyDown);
       overlay.remove();
-      elements.softModal = null;
-    });
+      if (elements.softModal === overlay) elements.softModal = null;
+      if (elements.closeSoftModal === closeModal) elements.closeSoftModal = null;
+    };
+    const handleKeyDown = (event) => {
+      if (event.key === "Escape") closeModal();
+    };
+    close.addEventListener("click", closeModal);
 
     const heading = document.createElement(titleHref ? "a" : "div");
     heading.className = "modal-title";
@@ -317,12 +400,14 @@ export function createGameUi(config, root, state, input) {
     overlay.append(modal);
     overlay.addEventListener("click", (event) => {
       if (event.target === overlay) {
-        overlay.remove();
-        elements.softModal = null;
+        closeModal();
       }
     });
     layer.append(overlay);
     elements.softModal = overlay;
+    elements.closeSoftModal = closeModal;
+    window.addEventListener("keydown", handleKeyDown);
+    close.focus({ preventScroll: true });
   }
 
 }

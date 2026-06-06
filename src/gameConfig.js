@@ -486,12 +486,17 @@ export const gameConfig = {
 
   credits: {
     studentName: "Hannah",
+    gameTitle: "Restless Spirit",
     contestTitle: "PIK Composition Contest 2026",
+    contestName: "Piano Inspires Kids Composition Contest",
     contestUrl: "https://youtube.com/playlist?list=PLhhleIn9mEjhNAztK55u86m13lu6xpqoM&si=9kGz8asDtaMO3Wy8",
+    contestPlaylistUrl: "https://youtube.com/playlist?list=PLhhleIn9mEjhNAztK55u86m13lu6xpqoM&si=9kGz8asDtaMO3Wy8",
+    contestMagazineUrl: "https://kids.pianoinspires.com/magazine/",
     linkLabel: "Hannah - Restless Spirit",
     musicUrl: "https://www.youtube.com/watch?v=Woz_xv3eIcM",
     designerName: "Le Binh Anh Nguyen",
     designerEmail: "binhanhpiano96@gmail.com",
+    developerUrl: "https://www.coastal.edu/academics/facultyprofiles/humanities/music/lebinhanhnguyen/",
     line1: "Original music and characters by Hannah",
     line2: "Playable browser-game adaptation by Beita and Codex"
   },

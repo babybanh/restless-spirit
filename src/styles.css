@@ -625,9 +625,12 @@ body.is-loading #ui-root {
 }
 
 .credits-modal .soft-modal-card {
-  width: 500px;
-  max-width: calc(100% - 36px);
-  padding: 30px 34px 28px;
+  display: block;
+  width: 540px;
+  max-width: none;
+  max-height: none;
+  overflow: visible;
+  padding: 52px 30px 34px;
   border-radius: 28px 30px 26px 32px;
   color: var(--cocoa);
   background:
@@ -635,6 +638,8 @@ body.is-loading #ui-root {
     linear-gradient(rgba(249, 246, 255, 0.98), rgba(231, 224, 255, 0.97));
   border: 0;
   box-shadow: 0 28px 54px rgba(5, 10, 33, 0.28), inset 0 0 0 1px rgba(255, 255, 255, 0.78);
+  transform: scale(var(--credits-scale, 1));
+  transform-origin: center;
 }
 
 .credits-modal .modal-subtitle {
@@ -642,40 +647,94 @@ body.is-loading #ui-root {
 }
 
 .credits-modal .modal-title {
+  display: block;
   color: #4d2baa;
-  max-width: 390px;
-  margin: 8px auto 20px;
-  font-size: 26px;
+  max-width: 100%;
+  margin: 0 auto 28px;
+  padding: 0;
+  font-size: 31px;
   font-weight: 850;
-  line-height: 1;
+  line-height: 1.04;
+  white-space: nowrap;
 }
 
 .credits-copy {
-  margin: 18px auto 0;
-  max-width: 400px;
+  display: grid;
+  justify-items: center;
+  row-gap: 9px;
+  width: 100%;
+  margin: 19px auto 0;
+  max-width: 100%;
   color: var(--cocoa-soft);
-  font-size: 16px;
+  font-size: 17px;
   font-weight: 750;
-  line-height: 1.35;
+  line-height: 1.28;
   text-align: center;
 }
 
 .credits-copy + .credits-copy {
-  margin-top: 18px;
+  margin-top: 21px;
 }
 
-.credits-copy span,
-.credits-copy a {
+.credits-line {
   display: block;
+  width: 100%;
+  color: var(--cocoa-soft);
+  font-size: 17px;
+  font-weight: inherit;
+  line-height: 1.28;
+  white-space: nowrap;
 }
 
-.credits-copy a,
-.credits-copy .credits-name {
-  color: #b46a12;
-  margin-top: 2px;
-  font-size: 19px;
-  font-weight: 850;
+.credits-name {
+  display: inline;
+  color: inherit;
+  font: inherit;
+  font-weight: inherit;
+}
+
+.credits-link-row {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 8px 12px;
+  margin-top: 0;
+}
+
+.credits-link,
+.credits-copy a.credits-link {
+  display: inline-block;
+  margin-top: 0;
+  padding: 5px 11px 6px;
+  border: 1px solid rgba(43, 139, 199, 0.2);
+  border-radius: 999px;
+  color: #236ea8;
+  background: rgba(232, 247, 255, 0.78);
+  box-shadow: 0 1px 0 rgba(35, 110, 168, 0.1);
+  font-size: 15px;
+  font-weight: 900;
+  line-height: 1.2;
+  text-align: center;
   text-decoration: none;
+  cursor: pointer;
+}
+
+.credits-link:hover,
+.credits-copy a.credits-link:hover {
+  color: #155f99;
+  background: rgba(238, 250, 255, 0.98);
+  box-shadow: 0 2px 0 rgba(35, 110, 168, 0.14);
+}
+
+.credits-link:focus-visible,
+.credits-copy a.credits-link:focus-visible {
+  outline: 3px solid rgba(43, 139, 199, 0.5);
+  outline-offset: 3px;
+  background: rgba(238, 250, 255, 0.98);
+}
+
+.credits-link:active {
+  transform: translateY(1px);
 }
 
 .credits-playlist-link {
@@ -745,34 +804,29 @@ body.is-loading #ui-root {
   }
 
   .credits-modal .soft-modal-card {
-    width: 500px;
-    max-width: calc(100% - 36px);
-    padding: 30px 34px 28px;
+    width: 540px;
+    max-width: none;
+    --credits-scale: 1.1;
+    padding: 52px 30px 34px;
   }
 
   .credits-modal .modal-title {
-    max-width: 390px;
-    margin: 8px auto 20px;
+    max-width: 100%;
+    margin: 0 auto 28px;
     padding: 0;
-    font-size: 26px;
-    line-height: 1;
+    font-size: 31px;
+    line-height: 1.04;
   }
 
   .credits-copy {
-    margin: 18px auto 0;
-    max-width: 400px;
-    font-size: 16px;
-    line-height: 1.35;
+    margin: 19px auto 0;
+    max-width: 100%;
+    font-size: 17px;
+    line-height: 1.28;
   }
 
   .credits-copy + .credits-copy {
-    margin-top: 18px;
-  }
-
-  .credits-copy a,
-  .credits-copy .credits-name {
-    margin-top: 2px;
-    font-size: 19px;
+    margin-top: 21px;
   }
 
 }
