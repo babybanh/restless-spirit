@@ -88,5 +88,12 @@ export function createBufferedSfx(paths) {
     if (context.state === 'running') void context.suspend().catch(() => undefined);
   }
 
-  return { unlock, play, stop };
+  function playReady(path, volume) {
+    const buffer = buffers.get(path);
+    if (!unlocked || decodeFailed || context.state !== 'running' || !buffer) return false;
+    start(buffer, volume);
+    return true;
+  }
+
+  return { unlock, play, playReady, stop };
 }

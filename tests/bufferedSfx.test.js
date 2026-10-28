@@ -32,3 +32,13 @@ test('backgrounding cancels queued effects and a fresh gesture unlocks again',as
  assert.equal(e.starts.filter(b=>b.length>1).length,0);e.player.unlock();await flush();
  e.player.play('/coin.wav',.5,()=>assert.fail('unexpected fallback'),()=>true);await flush();assert.equal(e.starts.filter(b=>b.length>1).length,1);e.player.stop();
 });
+
+test('mobile pickup skips a cold or suspended engine without fetching/resuming',async()=>{
+ const e=environment();const initialFetches=e.fetches;
+ assert.equal(e.player.playReady('/coin.wav',.5),false);
+ await flush();assert.equal(e.player.playReady('/coin.wav',.5),false);
+ e.player.unlock();await flush();assert.equal(e.player.playReady('/coin.wav',.5),true);
+ e.context.state='suspended';assert.equal(e.player.playReady('/coin.wav',.5),false);
+ assert.equal(e.context.state,'suspended');assert.equal(e.fetches,initialFetches);
+ assert.equal(e.starts.filter(b=>b.length>1).length,1);e.player.stop();
+});
