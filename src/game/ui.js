@@ -998,6 +998,8 @@ export function createAudioController(config) {
   let startTimer = null;
   const queuedSfx = [];
   const sfxPlayers = new Map();
+  const sfxPrimeTokens = new WeakMap();
+  const primedSfxPlayers = new WeakSet();
   const audio = new Audio(config.audio.musicPath);
   audio.volume = config.audio.musicVolume;
   audio.preload = "none";
@@ -1128,7 +1130,8 @@ export function createAudioController(config) {
 
   function playSfx(name) {
     if (backgrounded || document.hidden || !sfxEnabled || !interactionUnlocked) return;
-    if (name === "bananaPickup" && usesTouchAudioPath()) {
+    // Damage feedback must not wait for the optional buffered audio path.
+    if (name === "bunnyHit" || (name === "bananaPickup" && usesTouchAudioPath())) {
       playFileSfx(name);
       return;
     }
@@ -1148,6 +1151,13 @@ export function createAudioController(config) {
 
   function primeSfxPath(fromGesture = false) {
     if (!sfxEnabled) return;
+    if (fromGesture) {
+      // Unlock the essential HTML fallback on real input, even when Web Audio
+      // exists but remains suspended or its decoded hit buffer is not ready.
+      const path = resolveSfxPath(config, "bunnyHit");
+      const player = path ? getSfxPlayer(path) : null;
+      if (player && !primedSfxPlayers.has(player)) void primeSfxPlayer(player);
+    }
     if (bufferedSfx?.unlock(fromGesture)) {
       sfxPrimed = true;
       flushQueuedSfx();
@@ -1197,13 +1207,19 @@ export function createAudioController(config) {
   }
 
   function primeSfxPlayer(player) {
+    const token = {};
+    sfxPrimeTokens.set(player, token);
     player.muted = true;
     player.volume = 0;
     const prime = player.play();
     return Promise.resolve(prime).then(() => {
+      primedSfxPlayers.add(player);
+      if (sfxPrimeTokens.get(player) !== token) return;
       player.pause();
       player.currentTime = 0;
     }).catch(() => undefined).finally(() => {
+      if (sfxPrimeTokens.get(player) !== token) return;
+      sfxPrimeTokens.delete(player);
       player.muted = false;
       player.volume = config.audio.sfxVolume;
     });
@@ -1218,6 +1234,11 @@ export function createAudioController(config) {
       bufferedSfx?.playReady(path, config.audio.sfxVolume);
       return;
     }
+    if (name === "bunnyHit") {
+      // A missing/cold/suspended buffer must never silently discard a hit.
+      if (!bufferedSfx?.playReady(path, config.audio.sfxVolume)) playHtmlSfx(path, name);
+      return;
+    }
     if (bufferedSfx?.play(path, config.audio.sfxVolume, () => playHtmlSfx(path, name),
       () => sfxEnabled && interactionUnlocked && !backgrounded && !document.hidden)) return;
     playHtmlSfx(path, name);
@@ -1226,13 +1247,18 @@ export function createAudioController(config) {
   function playHtmlSfx(path, name) {
     const player = getSfxPlayer(path);
     if (!player) return;
-    player.pause();
+    // A late muted-prime completion must not pause this audible effect.
+    sfxPrimeTokens.delete(player);
+    // Reuse a pending hit prime without aborting its in-flight play request.
+    if (name !== "bunnyHit") player.pause();
     player.currentTime = 0;
     player.muted = false;
     player.volume = config.audio.sfxVolume;
+    primedSfxPlayers.add(player);
     const sound = player.play();
     if (sound?.catch) {
       sound.catch(() => {
+        primedSfxPlayers.delete(player);
         sfxPrimed = false;
         queuedSfx.push(name);
       });
