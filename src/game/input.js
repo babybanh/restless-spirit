@@ -24,10 +24,12 @@ export function createInputController(config, shell) {
   };
 
   window.addEventListener("keydown", (event) => {
+    if (document.hidden || event.target?.closest?.("input, textarea, select, [contenteditable='true']")) return;
     const key = event.key.toLowerCase();
     const isFirstPress = !keysDown.has(key);
     keysDown.add(key);
     if (isMovementKey(key)) {
+      event.preventDefault();
       notifyAudioGestureStart(controller);
       notifyMovementGesture(controller);
     }
@@ -43,6 +45,13 @@ export function createInputController(config, shell) {
 
   window.addEventListener("keyup", (event) => {
     keysDown.delete(event.key.toLowerCase());
+  });
+
+  // A keyup/pointerup can happen in another tab or app and never reach us.
+  window.addEventListener("blur", resetMovement);
+  window.addEventListener("pagehide", resetMovement);
+  document.addEventListener("visibilitychange", () => {
+    if (document.hidden) resetMovement();
   });
 
   shell.addEventListener("pointerdown", (event) => {

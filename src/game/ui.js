@@ -1,3 +1,5 @@
+import { createBufferedSfx } from "./bufferedSfx.js";
+
 export function createGameUi(config, root, state, input) {
   const defaultConfig = structuredClone(config);
   applySavedTuning(config);
@@ -187,7 +189,7 @@ export function createGameUi(config, root, state, input) {
     updateStartSpotlight(elements, state, config);
 
     updateJoystickView(elements, input.joystick, config, state);
-    updateTuningValues(elements, config);
+    if (state.tuningVisible) updateTuningValues(elements, config);
 
     if (state.debugVisible) {
       elements.debugText.textContent = formatDebugText(debugData, state, input, config);
@@ -981,12 +983,13 @@ function formatDebugText(debugData, state, input, config) {
   ].join("\n");
 }
 
-function createAudioController(config) {
+export function createAudioController(config) {
   const savedMusicPreference = localStorage.getItem(config.audio.storageKey);
   const savedSfxPreference = localStorage.getItem(config.audio.sfxStorageKey);
   let musicEnabled = savedMusicPreference === null ? true : savedMusicPreference === "true";
   let sfxEnabled = savedSfxPreference === null ? config.audio.sfxEnabled : savedSfxPreference === "true";
   let started = false;
+  let backgrounded = document.hidden;
   let interactionUnlocked = false;
   let audioPrimed = false;
   let sfxPrimed = false;
@@ -997,31 +1000,48 @@ function createAudioController(config) {
   const sfxPlayers = new Map();
   const audio = new Audio(config.audio.musicPath);
   audio.volume = config.audio.musicVolume;
-  audio.preload = "auto";
+  audio.preload = "none";
   audio.playsInline = true;
-  audio.load();
+  const bufferedSfx = createBufferedSfx([resolveSfxPath(config, "bananaPickup"), resolveSfxPath(config, "bombExplosion"), resolveSfxPath(config, "bunnyHit")].filter(Boolean));
   preloadSfxFiles();
 
   audio.addEventListener("ended", () => {
     if (!musicEnabled || !started) return;
     window.clearTimeout(loopTimer);
     loopTimer = window.setTimeout(() => {
-      if (musicEnabled && started) play();
+      if (!backgrounded && !document.hidden && musicEnabled && started) play();
     }, config.audio.loopGapMs);
   });
 
-  document.addEventListener("visibilitychange", () => {
-    if (!document.hidden) return;
+  function pauseForBackground() {
+    backgrounded = true;
+    started = false;
+    audioPrimed = false;
+    window.clearTimeout(loopTimer);
     window.clearTimeout(startTimer);
-    if (!audio.paused) {
-      window.clearTimeout(loopTimer);
-      audio.pause();
-      started = false;
-      audioPrimed = false;
-    }
+    audio.pause();
+    queuedSfx.length = 0;
+    bufferedSfx?.stop();
+    for (const player of sfxPlayers.values()) player.pause();
+  }
+
+  function resumeFromBackground() {
+    if (document.hidden) return;
+    // Preserve the series policy: resume only on a fresh movement gesture.
+    backgrounded = false;
+  }
+
+  document.addEventListener("visibilitychange", () => {
+    if (document.hidden) pauseForBackground();
+    else resumeFromBackground();
   });
+  window.addEventListener("pagehide", pauseForBackground);
+  window.addEventListener("pageshow", resumeFromBackground);
+  window.addEventListener("blur", pauseForBackground);
+  window.addEventListener("focus", resumeFromBackground);
 
   function play() {
+    if (backgrounded || document.hidden || !musicEnabled) return;
     audio.volume = config.audio.musicVolume;
     audio.muted = false;
     audio.play().catch(() => {
@@ -1030,13 +1050,15 @@ function createAudioController(config) {
   }
 
   function prepareFromGesture() {
+    if (backgrounded || document.hidden) return;
     interactionUnlocked = true;
-    primeSfxPath();
+    primeSfxPath(true);
     if (audioPrimed || started || !musicEnabled || !config.audio.startOnFirstMovement) return;
     startMutedMusic();
   }
 
   function startFromMovement() {
+    if (backgrounded || document.hidden) return;
     interactionUnlocked = true;
     primeSfxPath();
     if (!musicEnabled || started || !config.audio.startOnFirstMovement) return;
@@ -1069,6 +1091,7 @@ function createAudioController(config) {
   }
 
   function revealMusicAfterDelay() {
+    if (backgrounded || document.hidden) return;
     if (!musicEnabled || !started) return;
     audio.muted = false;
     audio.volume = config.audio.musicVolume;
@@ -1104,7 +1127,7 @@ function createAudioController(config) {
   }
 
   function playSfx(name) {
-    if (!sfxEnabled || !interactionUnlocked) return;
+    if (backgrounded || document.hidden || !sfxEnabled || !interactionUnlocked) return;
     if (!isSfxReady()) {
       queuedSfx.push(name);
       primeSfxPath();
@@ -1115,11 +1138,17 @@ function createAudioController(config) {
 
   function previewSfx(name) {
     interactionUnlocked = true;
-    primeSfxPath();
+    primeSfxPath(true);
     playFileSfx(name);
   }
 
-  function primeSfxPath() {
+  function primeSfxPath(fromGesture = false) {
+    if (!sfxEnabled) return;
+    if (bufferedSfx?.unlock(fromGesture)) {
+      sfxPrimed = true;
+      flushQueuedSfx();
+      return;
+    }
     if (!sfxEnabled) return;
     if (sfxPrimed) {
       flushQueuedSfx();
@@ -1150,9 +1179,8 @@ function createAudioController(config) {
   }
 
   function preloadSfxFiles() {
-    for (const path of getAllSfxPaths(config)) {
-      getSfxPlayer(path);
-    }
+    // Load the active sounds first; tuning alternatives can load on demand.
+    if (!bufferedSfx) getPrimeableSfxPlayers();
   }
 
   function getPrimeableSfxPlayers() {
@@ -1180,6 +1208,12 @@ function createAudioController(config) {
   function playFileSfx(name) {
     const path = resolveSfxPath(config, name);
     if (!path) return;
+    if (bufferedSfx?.play(path, config.audio.sfxVolume, () => playHtmlSfx(path, name),
+      () => sfxEnabled && interactionUnlocked && !backgrounded && !document.hidden)) return;
+    playHtmlSfx(path, name);
+  }
+
+  function playHtmlSfx(path, name) {
     const player = getSfxPlayer(path);
     if (!player) return;
     player.pause();
