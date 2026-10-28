@@ -1128,6 +1128,10 @@ export function createAudioController(config) {
 
   function playSfx(name) {
     if (backgrounded || document.hidden || !sfxEnabled || !interactionUnlocked) return;
+    if (name === "bananaPickup" && usesTouchAudioPath()) {
+      playFileSfx(name);
+      return;
+    }
     if (!isSfxReady()) {
       queuedSfx.push(name);
       primeSfxPath();
@@ -1208,6 +1212,12 @@ export function createAudioController(config) {
   function playFileSfx(name) {
     const path = resolveSfxPath(config, name);
     if (!path) return;
+    if (name === "bananaPickup" && usesTouchAudioPath()) {
+      // A pickup must never initialize/resume media or fall back to HTML audio
+      // on a phone. Play only the already-warm buffer; otherwise stay silent.
+      bufferedSfx?.playReady(path, config.audio.sfxVolume);
+      return;
+    }
     if (bufferedSfx?.play(path, config.audio.sfxVolume, () => playHtmlSfx(path, name),
       () => sfxEnabled && interactionUnlocked && !backgrounded && !document.hidden)) return;
     playHtmlSfx(path, name);
@@ -1425,4 +1435,10 @@ function setCircle(element, centerX, centerY, radius) {
 
 function px(value) {
   return `${value}px`;
+}
+
+function usesTouchAudioPath() {
+  return (window.matchMedia?.("(pointer: coarse)").matches ?? false) ||
+    (typeof navigator !== "undefined" && navigator.maxTouchPoints > 0) ||
+    (typeof navigator !== "undefined" && /FBAN|FBAV|FBIOS|FB_IAB|Instagram|Messenger|Line|MicroMessenger/i.test(navigator.userAgent));
 }
